@@ -1,4 +1,4 @@
-package lightning323.packInstaller
+package lightning323.packInstaller.com.lightning323.packInstaller
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.dataformat.toml.TomlMapper
