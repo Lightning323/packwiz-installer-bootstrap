@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("packwiz-installer-bootstrap")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+54d33f22c1d4e7505f467c3a414d6a8ea00156cf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb4cdf1a926cff78286b4a03e7b84fba3abb07c1")]
 [assembly: System.Reflection.AssemblyProductAttribute("packwiz-installer-bootstrap")]
 [assembly: System.Reflection.AssemblyTitleAttribute("packwiz-installer-bootstrap")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

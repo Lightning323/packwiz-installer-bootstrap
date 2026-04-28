@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "ls0PK99EbMA=",
+  "dgSpecHash": "REZ6iAfJFJU=",
   "success": true,
   "projectFilePath": "/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/packwiz-installer-bootstrap.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/sampw/.nuget/packages/tomlyn/2.3.2/tomlyn.2.3.2.nupkg.sha512"
+  ],
   "logs": []
 }

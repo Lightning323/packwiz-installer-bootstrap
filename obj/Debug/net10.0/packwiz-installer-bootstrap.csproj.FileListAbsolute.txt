@@ -1,6 +1,4 @@
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap
-/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap.deps.json
-/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap.runtimeconfig.json
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap.dll
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap.pdb
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/packwiz-installer-bootstrap.GeneratedMSBuildEditorConfig.editorconfig
@@ -11,5 +9,10 @@
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/packwiz-installer-bootstrap.dll
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/refint/packwiz-installer-bootstrap.dll
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/packwiz-installer-bootstrap.pdb
+/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap.deps.json
+/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/packwiz-installer-bootstrap.runtimeconfig.json
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/packwiz-installer-bootstrap.genruntimeconfig.cache
 /mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/ref/packwiz-installer-bootstrap.dll
+/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/bin/Debug/net10.0/Tomlyn.dll
+/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/packwiz-installer-bootstrap.csproj.AssemblyReference.cache
+/mnt/SharedVolume/Documents/GitHub/packwiz-installer-bootstrap/obj/Debug/net10.0/packwiz-.349C6474.Up2Date
