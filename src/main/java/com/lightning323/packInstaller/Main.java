@@ -7,6 +7,7 @@ import com.lightning323.packInstaller.fileTypes.IndexFile;
 import com.lightning323.packInstaller.fileTypes.PackConfig;
 import com.lightning323.packInstaller.utils.IOUtils;
 import com.lightning323.packInstaller.utils.ModDownloader;
+import com.lightning323.packInstaller.utils.UIUtils;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -23,15 +24,18 @@ public class Main {
     static private final ExecutorService workerPool = Executors.newFixedThreadPool(8);
 
     public static void main(String[] args) throws MalformedURLException {
-        URL packTomlURL = new URL("https://raw.githubusercontent.com/Lightning323/MC-Terranova/refs/heads/main/pack/pack.toml");
+        URL PACK_TOML_URL = new URL("https://raw.githubusercontent.com/Lightning323/MC-Terranova/refs/heads/main/pack/pack.toml");
+        File SAVE_DIR = new File("./test_save/");
 
         // Setup Mapper
         TomlMapper mapper = new TomlMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 
         try {
+            AtomicBoolean popup = new AtomicBoolean(true);
+            long startTime = System.currentTimeMillis();
             System.out.println("Fetching pack configuration...");
-            String packContent = fetchString(packTomlURL);
+            String packContent = fetchString(PACK_TOML_URL);
 
             // Deserialize PackConfig
             PackConfig config = mapper.readValue(packContent, PackConfig.class);
@@ -41,6 +45,7 @@ public class Main {
             if (config.versions != null) {
                 System.out.println("Minecraft Version: " + config.versions.get("minecraft"));
             }
+
 
             if (config.index != null) {
                 System.out.println("\n--- Index ---");
@@ -52,21 +57,23 @@ public class Main {
                 System.out.println("Hash: " + config.index.hash);
 
                 //Get the index.toml
-                URL indexURL = getRelativeUrl(packTomlURL, config.index.file);
+                URL indexURL = getRelativeUrl(PACK_TOML_URL, config.index.file);
                 String indexContent = fetchString(indexURL);
                 IndexFile indexData = mapper.readValue(indexContent, IndexFile.class);
-
-                File saveDir = new File("./test_save/");
-                saveDir.mkdirs();
-
-
+                SAVE_DIR.mkdirs();
                 AtomicBoolean stop = new AtomicBoolean(false);
 
                 for (FileEntry entry : indexData.files) {
                     if (!stop.get()) workerPool.submit(() -> {
                         try {
-                            IOUtils.checkAndDownloadFile(indexURL, saveDir, config.index.hashFormat, entry);
-                            ModDownloader.checkAndDownloadMod(entry, saveDir);
+                            IOUtils.checkAndDownloadFile(indexURL, SAVE_DIR, config.index.hashFormat, entry);
+                            ModDownloader.checkAndDownloadMod(entry, SAVE_DIR);
+
+                            if (System.currentTimeMillis() - startTime > 3000 && popup.get()) {
+                                popup.set(false);
+                                UIUtils.detachedAlert("Beginning download", "Starting download for " + config.name);
+                            }
+
                         } catch (Exception e) {
                             System.err.println("Failed to download " + entry.file());
                             stop.set(true);
@@ -81,8 +88,12 @@ public class Main {
                     workerPool.shutdownNow();
                 }
                 System.out.println("\n--- Download Complete ---");
-                FileCleanup.deleteUnIncludedFiles(saveDir, indexData);
+                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData);
                 System.out.println("\n--- Cleanup Complete ---");
+
+                if (System.currentTimeMillis() - startTime > 3000) {
+                    UIUtils.detachedAlert("Download complete", "Download complete for " + config.name);
+                }
             } else {
                 System.err.println("No index found!");
             }
@@ -90,6 +101,7 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
+            Runtime.getRuntime().exit(1);
         }
     }
 
