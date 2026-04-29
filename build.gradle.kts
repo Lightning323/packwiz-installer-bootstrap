@@ -1,5 +1,7 @@
 plugins {
     kotlin("jvm") version "2.3.20"
+    java
+    application
 }
 
 group = "org.lightning323"
@@ -24,4 +26,18 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+application {
+    mainClass.set("com.lightning323.packInstaller.Main")
+}
+
+sourceSets {
+    main {
+        java {
+            // This tells Gradle to look for both Java and Kotlin files
+            // in both directories during the compilation phase
+            setSrcDirs(listOf("src/main/java", "src/main/kotlin"))
+        }
+    }
 }
