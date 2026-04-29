@@ -121,7 +121,7 @@ public class PackInstaller implements Runnable {
                             IOUtils.checkAndDownloadFile(indexURL, SAVE_DIR, config.index.hashFormat, entry);
                             ModDownloader.checkAndDownloadMod(entry, SAVE_DIR);
 
-                            if (System.currentTimeMillis() - startTime > 3000 && popup.get()) {
+                            if (System.currentTimeMillis() - startTime > 2000 && popup.get()) {
                                 popup.set(false);
                                 UIUtils.detachedAlert("Downloading Modpack...", "Your \"" + config.name + "\" pack is being installed...");
                             }
@@ -141,7 +141,7 @@ public class PackInstaller implements Runnable {
                 FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData, fullCleanup);
                 System.out.println("\n--- Cleanup Complete ---");
 
-                if (System.currentTimeMillis() - startTime > 3000) {
+                if (System.currentTimeMillis() - startTime > 2000) {
                     UIUtils.detachedAlert("Modpack download complete!", "Download complete for \"" + config.name + "\"");
                 }
             } else {
