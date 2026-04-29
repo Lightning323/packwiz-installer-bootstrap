@@ -93,7 +93,6 @@ public class FileCleanup {
                         if (!filesThatShouldExist.contains(fileRelativePath)) {
                             //Spare jarfiles that dont have a toml file, because they were likely added manually
                             if (fileRelativePath.getFileName().toString().endsWith(".jar") && !jarsWithTomlFiles.contains(fileRelativePath) && !fullCleanup) {
-                                System.out.println(file.toPath());
                                 //We can spare files that don't have a toml file because they were likely added manually
                                 System.out.println("Sparing jarfile " + fileRelativePath);
                                 continue;

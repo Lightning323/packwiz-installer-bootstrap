@@ -123,7 +123,7 @@ public class PackInstaller implements Runnable {
 
                             if (System.currentTimeMillis() - startTime > 3000 && popup.get()) {
                                 popup.set(false);
-                                UIUtils.detachedAlert("Beginning download", "Starting download for " + config.name);
+                                UIUtils.detachedAlert("Downloading Modpack...", "Your \"" + config.name + "\" pack is being installed...");
                             }
                         } catch (Exception e) {
                             fail("Failed to download " + entry.file(), e);
@@ -142,7 +142,7 @@ public class PackInstaller implements Runnable {
                 System.out.println("\n--- Cleanup Complete ---");
 
                 if (System.currentTimeMillis() - startTime > 3000) {
-                    UIUtils.detachedAlert("Download complete", "Download complete for " + config.name);
+                    UIUtils.detachedAlert("Modpack download complete!", "Download complete for \"" + config.name + "\"");
                 }
             } else {
                 System.err.println("No index found!");
