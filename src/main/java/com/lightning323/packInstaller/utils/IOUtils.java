@@ -1,13 +1,11 @@
 package com.lightning323.packInstaller.utils;
 
-import com.lightning323.packInstaller.DirectoryManager;
+import com.lightning323.packInstaller.FileCleanup;
 import com.lightning323.packInstaller.fileTypes.FileEntry;
 
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class IOUtils {
@@ -15,7 +13,7 @@ public class IOUtils {
 
     public static void checkAndDownloadFile(URL baseUrl, File baseSaveDir, String hashFormat,
                                             FileEntry entry)
-            throws IOException, SecurityException, URISyntaxException {
+            throws IOException, SecurityException, URISyntaxException, InterruptedException {
 
         URL fileURL = getRelativeUrl(baseUrl, entry.file());
 
@@ -24,7 +22,7 @@ public class IOUtils {
         File dir = outFile.getParentFile();
         dir.mkdirs();
         //Add the directory to the list of downloaded directories
-        DirectoryManager.add(dir.toPath());
+        FileCleanup.add(dir.toPath());
         if (outFile.exists()) {
             //If a file already exist, check if they are the same
             byte[] existingFile = Files.readAllBytes(outFile.toPath());
@@ -39,12 +37,15 @@ public class IOUtils {
         try (var inputStream = conn.getInputStream()) {
             writer.write(inputStream.readAllBytes());
         }
+        writeFile(hashFormat, writer.toByteArray(), outFile, entry.hash());
+    }
+
+    public static void writeFile(String hashFormat, byte[] bytes, File outFile, String hash) throws IOException {
         //Verify the hash
-        String hash = HashUtils.getHash(hashFormat, writer.toByteArray());
-        if (!hash.equals(entry.hash())) {
-            throw new SecurityException("Hash for " + entry.file() + " does not match!");
+        if (!HashUtils.getHash(hashFormat, bytes).equals(hash)) {
+            throw new IOException("Hash for \"" + outFile.toPath() + "\" does not match!");
         }
-        Files.write(outFile.toPath(), writer.toByteArray());
+        Files.write(outFile.toPath(), bytes);
     }
 
     public static URL getRelativeUrl(URL baseUrl, String relativePath) throws URISyntaxException, MalformedURLException {

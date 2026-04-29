@@ -2,28 +2,41 @@ package com.lightning323.packInstaller;
 
 import com.lightning323.packInstaller.fileTypes.FileEntry;
 import com.lightning323.packInstaller.fileTypes.IndexFile;
+import com.lightning323.packInstaller.fileTypes.ModFile;
+import com.lightning323.packInstaller.utils.ModDownloader;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.Iterator;
 
-public class DirectoryManager {
+import static com.lightning323.packInstaller.utils.ModDownloader.MOD_TOML_FILE_EXT;
+
+public class FileCleanup {
     static HashSet<Path> downloadedDirectories = new HashSet<>();
 
-    public static void deleteUnIncludedFiles(File saveDir, IndexFile indexData) {
+    public static void deleteUnIncludedFiles(File saveDir, IndexFile indexData) throws IOException {
         System.out.println("\n--- Deleting Unincluded Files ---");
-        HashSet<Path> indexFiles = new HashSet<>();
+        HashSet<Path> filesThatShouldExist = new HashSet<>();
         for (FileEntry fe : indexData.files) {
-            indexFiles.add(Path.of(fe.file()));
+            if (fe.file().endsWith(MOD_TOML_FILE_EXT)) {
+                //Add the jar file to the entry
+                File pwTomlFile = new File(saveDir, fe.file());
+                ModFile modFile = ModDownloader.getFileEntry(pwTomlFile);
+
+                File jarFile = Path.of(fe.file())
+                        .resolveSibling(modFile.filename)
+                        .toFile();
+//                System.out.println("Adding jar file: " + jarFile);
+                filesThatShouldExist.add(jarFile.toPath());
+            }
+            filesThatShouldExist.add(Path.of(fe.file()));
         }
 
         //Now delete files within downloaded directories that arent on the list
-        DirectoryManager.getDownloadedDirectories().forEach(path -> {
+        FileCleanup.getDownloadedDirectories().forEach(path -> {
             //IMPORTANT SAFETY CHECK, make sure the path is inside the save directory
-            if (!DirectoryManager.isInsideOrEqual(path, saveDir.toPath()))
+            if (!FileCleanup.isInsideOrEqual(path, saveDir.toPath()))
                 throw new RuntimeException("Path " + path + " is not inside the save directory");
 
             fileLoop:
@@ -33,7 +46,7 @@ public class DirectoryManager {
                     Path full = file.toPath().toAbsolutePath().normalize();
                     Path fileRelativePath = base.relativize(full);
                     //Check if the file is in the index
-                    if (!indexFiles.contains(fileRelativePath)) {
+                    if (!filesThatShouldExist.contains(fileRelativePath)) {
                         System.out.println("Deleting file: " + file);
                         file.delete();
                     }

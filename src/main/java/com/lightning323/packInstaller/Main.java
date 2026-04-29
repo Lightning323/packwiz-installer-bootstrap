@@ -6,16 +6,15 @@ import com.lightning323.packInstaller.fileTypes.FileEntry;
 import com.lightning323.packInstaller.fileTypes.IndexFile;
 import com.lightning323.packInstaller.fileTypes.PackConfig;
 import com.lightning323.packInstaller.utils.IOUtils;
+import com.lightning323.packInstaller.utils.ModDownloader;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.lightning323.packInstaller.utils.IOUtils.fetchString;
 import static com.lightning323.packInstaller.utils.IOUtils.getRelativeUrl;
@@ -66,8 +65,8 @@ public class Main {
                 for (FileEntry entry : indexData.files) {
                     if (!stop.get()) workerPool.submit(() -> {
                         try {
-                            IOUtils.checkAndDownloadFile(indexURL, saveDir,
-                                    config.index.hashFormat, entry);
+                            IOUtils.checkAndDownloadFile(indexURL, saveDir, config.index.hashFormat, entry);
+                            ModDownloader.checkAndDownloadMod(entry, saveDir);
                         } catch (Exception e) {
                             System.err.println("Failed to download " + entry.file());
                             stop.set(true);
@@ -82,7 +81,7 @@ public class Main {
                     workerPool.shutdownNow();
                 }
                 System.out.println("\n--- Download Complete ---");
-                DirectoryManager.deleteUnIncludedFiles(saveDir, indexData);
+                FileCleanup.deleteUnIncludedFiles(saveDir, indexData);
                 System.out.println("\n--- Cleanup Complete ---");
             } else {
                 System.err.println("No index found!");

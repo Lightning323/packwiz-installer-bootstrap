@@ -20,8 +20,9 @@ public class HashUtils {
         String normalizedType = hashType.toLowerCase().replace("-", "");
 
         return switch (normalizedType) {
+            case "sha512" -> getStandardHash("SHA-512", data); // Added SHA-512 support
             case "sha256" -> getStandardHash("SHA-256", data);
-            case "sha1" -> getStandardHash("SHA-1", data);
+            case "sha1"   -> getStandardHash("SHA-1", data);
             case "murmur2" -> getMurmur2Hash(data);
             default -> throw new IllegalArgumentException("Unsupported hash type: " + hashType);
         };
