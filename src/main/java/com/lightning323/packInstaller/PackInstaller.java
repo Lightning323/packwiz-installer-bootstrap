@@ -51,6 +51,20 @@ public class PackInstaller implements Runnable {
     @Option(names = {"-c", "--cleanup"}, description = "Do a full cleanup (delete all files)")
     boolean fullCleanup = false;
 
+    private static void fail(String message) {
+        System.err.println("\nFAIL:\n" + message.toUpperCase());
+        UIUtils.detachedAlert("Installation failed", message);
+        System.exit(1);
+    }
+
+    private static void fail(String message, Throwable t) {
+        System.err.println("\nFAIL:\n" + message.toUpperCase());
+        UIUtils.detachedAlert("Installation failed", message);
+        if (t != null && t.getMessage() != null) {
+            System.err.println(t.getMessage());
+        }
+        System.exit(1);
+    }
 
     @Override
     public void run() {
@@ -95,8 +109,7 @@ public class PackInstaller implements Runnable {
                 IndexFile indexData = mapper.readValue(indexContent, IndexFile.class);
                 SAVE_DIR.mkdirs();
                 if (!SAVE_DIR.exists()) {
-                    System.err.println("Failed to create save directory in " + SAVE_DIR.getAbsolutePath());
-                    System.exit(1);
+                    fail("Failed to create save directory in " + SAVE_DIR.getAbsolutePath());
                 }
                 System.out.println("\n\n" +
                         "--- Downloading to " + SAVE_DIR.getAbsolutePath() + " ---" +
@@ -114,9 +127,8 @@ public class PackInstaller implements Runnable {
                                 UIUtils.detachedAlert("Beginning download", "Starting download for " + config.name);
                             }
                         } catch (Exception e) {
-                            System.err.println("Failed to download " + entry.file());
-                            e.printStackTrace();
-                            System.exit(1);
+                            fail("Failed to download " + entry.file(), e);
+
                         }
                     });
                 }
@@ -138,8 +150,7 @@ public class PackInstaller implements Runnable {
             }
 
         } catch (Exception e) {
-            System.err.println("Could not complete installation: " + e.getMessage());
-            Runtime.getRuntime().exit(1);
+            fail("Could not complete installation: ", e);
         }
     }
 
