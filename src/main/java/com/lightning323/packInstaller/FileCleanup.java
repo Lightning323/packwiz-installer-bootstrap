@@ -17,6 +17,8 @@ public class FileCleanup {
 
     public static void deleteUnIncludedFiles(File saveDir, IndexFile indexData) throws IOException {
         System.out.println("\n--- Deleting Unincluded Files ---");
+
+        HashSet<Path> jarFilesThatShouldExist = new HashSet<>();
         HashSet<Path> filesThatShouldExist = new HashSet<>();
         for (FileEntry fe : indexData.files) {
             if (fe.file().endsWith(MOD_TOML_FILE_EXT)) {
@@ -28,7 +30,7 @@ public class FileCleanup {
                         .resolveSibling(modFile.filename)
                         .toFile();
 //                System.out.println("Adding jar file: " + jarFile);
-                filesThatShouldExist.add(jarFile.toPath());
+                jarFilesThatShouldExist.add(jarFile.toPath());
             }
             filesThatShouldExist.add(Path.of(fe.file()));
         }
@@ -46,7 +48,7 @@ public class FileCleanup {
                     Path full = file.toPath().toAbsolutePath().normalize();
                     Path fileRelativePath = base.relativize(full);
                     //Check if the file is in the index
-                    if (!filesThatShouldExist.contains(fileRelativePath)) {
+                    if (!filesThatShouldExist.contains(fileRelativePath) && !jarFilesThatShouldExist.contains(fileRelativePath)) {
                         System.out.println("Deleting file: " + file);
                         file.delete();
                     }
