@@ -112,8 +112,7 @@ public class PackInstaller implements Runnable {
                     fail("Failed to create save directory in " + SAVE_DIR.getAbsolutePath());
                 }
                 System.out.println("\n\n" +
-                        "--- Downloading to " + SAVE_DIR.getAbsolutePath() + " ---" +
-                        "\n\n");
+                        "--- Downloading to " + SAVE_DIR.getAbsolutePath() + " ---");
                 AtomicBoolean stop = new AtomicBoolean(false);
 
                 for (FileEntry entry : indexData.files) {
