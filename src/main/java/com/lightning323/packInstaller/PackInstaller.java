@@ -10,7 +10,11 @@ import com.lightning323.packInstaller.utils.ModDownloader;
 import com.lightning323.packInstaller.utils.UIUtils;
 
 import java.io.File;
-import java.net.MalformedURLException;
+
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,12 +24,41 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.lightning323.packInstaller.utils.IOUtils.fetchString;
 import static com.lightning323.packInstaller.utils.IOUtils.getRelativeUrl;
 
-public class Main {
-    static private final ExecutorService workerPool = Executors.newFixedThreadPool(8);
+@Command(
+        name = "pack",
+        mixinStandardHelpOptions = true,
+        version = "1.0",
+        headerHeading = "%n", // Adds a newline before the header
+        header = {
+                "@|fg(cyan)  _       _       ___       __ ___            _  _  |@",
+                "@|fg(cyan) |_) /\\  /  |/     |  |\\ | (_   |  /\\  |  |  |_ |_) |@",
+                "@|fg(cyan) |  /--\\ \\_ |\\    _|_ | \\| __)  | /--\\ |_ |_ |_ | \\ |@",
+                "",
+                "@|bold,white PACK-INSTALLER CLI Tool|@",
+                "@|faint,black ---------------------------------------------------|@" // Changed gray to faint black
+        },
+        description = "A custom package management utility."
+)
+public class PackInstaller implements Runnable {
 
-    public static void main(String[] args) throws MalformedURLException {
-        URL PACK_TOML_URL = new URL("https://raw.githubusercontent.com/Lightning323/MC-Terranova/refs/heads/main/pack/pack.toml");
-        File SAVE_DIR = new File("./test_save/");
+
+    @Option(names = {"-u", "--url"}, description = "Pack TOML URL")
+    URL PACK_TOML_URL;
+
+    @Option(names = {"-s", "--save"}, description = "The Save Directory", defaultValue = "./")
+    File SAVE_DIR;
+
+    @Option(names = {"-c", "--cleanup"}, description = "Do a full cleanup (delete all files)")
+    boolean fullCleanup = false;
+
+
+    @Override
+    public void run() {
+        if (PACK_TOML_URL == null) {
+            System.err.println("Pack TOML URL is required");
+            CommandLine.usage(this, System.out);
+            System.exit(1);
+        }
 
         // Setup Mapper
         TomlMapper mapper = new TomlMapper();
@@ -88,7 +121,7 @@ public class Main {
                     workerPool.shutdownNow();
                 }
                 System.out.println("\n--- Download Complete ---");
-                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData,false);
+                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData, fullCleanup);
                 System.out.println("\n--- Cleanup Complete ---");
 
                 if (System.currentTimeMillis() - startTime > 3000) {
@@ -99,10 +132,17 @@ public class Main {
             }
 
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Could not complete installation: " + e.getMessage());
             Runtime.getRuntime().exit(1);
         }
+    }
+
+
+    static private final ExecutorService workerPool = Executors.newFixedThreadPool(8);
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new PackInstaller()).execute(args);
+        System.exit(exitCode);
     }
 
 

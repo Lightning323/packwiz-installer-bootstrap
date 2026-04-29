@@ -18,6 +18,8 @@ dependencies {
 
     // Allows Jackson to work with Kotlin Data Classes
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+// Source: https://mvnrepository.com/artifact/info.picocli/picocli
+    implementation("info.picocli:picocli:4.7.7")
 }
 
 kotlin {
@@ -29,7 +31,7 @@ tasks.test {
 }
 
 application {
-    mainClass.set("com.lightning323.packInstaller.Main")
+    mainClass.set("com.lightning323.packInstaller.PackInstaller")
 }
 
 sourceSets {
