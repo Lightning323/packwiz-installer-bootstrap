@@ -1,36 +1,53 @@
 package com.lightning323.packInstaller.utils;
 
+import com.lightning323.packInstaller.DirectoryManager;
 import com.lightning323.packInstaller.fileTypes.FileEntry;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class IOUtils {
 
-    static HashSet<File> downloadedDirectories = new HashSet<>();
 
-    public static void downloadFile(URL baseUrl, File baseSaveDir, FileEntry entry) throws Exception {
+    public static void checkAndDownloadFile(URL baseUrl, File baseSaveDir, String hashFormat,
+                                            FileEntry entry)
+            throws IOException, SecurityException, URISyntaxException {
+
         URL fileURL = getRelativeUrl(baseUrl, entry.file());
 
         HttpURLConnection conn = (HttpURLConnection) fileURL.openConnection();
         File outFile = new File(baseSaveDir, entry.file());
         File dir = outFile.getParentFile();
-        downloadedDirectories.add(dir);
         dir.mkdirs();
-        try (var inputStream = conn.getInputStream();
-             FileWriter writer = new FileWriter(outFile)) {
-            writer.write(new String(inputStream.readAllBytes()));
+        //Add the directory to the list of downloaded directories
+        DirectoryManager.add(dir.toPath());
+        if (outFile.exists()) {
+            //If a file already exist, check if they are the same
+            byte[] existingFile = Files.readAllBytes(outFile.toPath());
+            String existingFileHash = HashUtils.getHash(hashFormat, existingFile);
+            if (existingFileHash.equals(entry.hash())) {
+                return; //The files are the same
+            }
         }
+        //Overwrite/write the file
+        ByteArrayOutputStream writer = new ByteArrayOutputStream();
+        System.out.println("Downloading File: " + entry.file());
+        try (var inputStream = conn.getInputStream()) {
+            writer.write(inputStream.readAllBytes());
+        }
+        //Verify the hash
+        String hash = HashUtils.getHash(hashFormat, writer.toByteArray());
+        if (!hash.equals(entry.hash())) {
+            throw new SecurityException("Hash for " + entry.file() + " does not match!");
+        }
+        Files.write(outFile.toPath(), writer.toByteArray());
     }
 
-    public static URL getRelativeUrl(URL baseUrl, String relativePath) throws Exception {
+    public static URL getRelativeUrl(URL baseUrl, String relativePath) throws URISyntaxException, MalformedURLException {
         URI resolvedUri = baseUrl.toURI().resolve(relativePath);
         return new URL(resolvedUri.toString());
     }

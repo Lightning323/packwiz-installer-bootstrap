@@ -7,18 +7,22 @@ import com.lightning323.packInstaller.fileTypes.IndexFile;
 import com.lightning323.packInstaller.fileTypes.PackConfig;
 import com.lightning323.packInstaller.utils.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.stream.Collectors;
+import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.lightning323.packInstaller.utils.IOUtils.fetchString;
 import static com.lightning323.packInstaller.utils.IOUtils.getRelativeUrl;
 
 public class Main {
+    static private final ExecutorService workerPool = Executors.newFixedThreadPool(8);
+
     public static void main(String[] args) throws MalformedURLException {
         URL packTomlURL = new URL("https://raw.githubusercontent.com/Lightning323/MC-Terranova/refs/heads/main/pack/pack.toml");
 
@@ -41,8 +45,11 @@ public class Main {
 
             if (config.index != null) {
                 System.out.println("\n--- Index ---");
+                if (config.index.file == null) throw new IllegalArgumentException("Index file cannot be null");
                 System.out.println("Index File Path: " + config.index.file);
+                if (config.index.hashFormat == null) throw new IllegalArgumentException("Hash type cannot be null");
                 System.out.println("Hash Format: " + config.index.hashFormat);
+                if (config.index.hash == null) throw new IllegalArgumentException("Hash cannot be null");
                 System.out.println("Hash: " + config.index.hash);
 
                 //Get the index.toml
@@ -53,11 +60,30 @@ public class Main {
                 File saveDir = new File("./test_save/");
                 saveDir.mkdirs();
 
-                int i = 0;
+
+                AtomicBoolean stop = new AtomicBoolean(false);
+
                 for (FileEntry entry : indexData.files) {
-                    i++;
-                    processFile(indexURL, saveDir, entry, i, indexData.files.size());
+                    if (!stop.get()) workerPool.submit(() -> {
+                        try {
+                            IOUtils.checkAndDownloadFile(indexURL, saveDir,
+                                    config.index.hashFormat, entry);
+                        } catch (Exception e) {
+                            System.err.println("Failed to download " + entry.file());
+                            stop.set(true);
+                            e.printStackTrace();
+                        }
+                    });
                 }
+
+                //Wait for all tasks to complete
+                workerPool.shutdown();
+                if (!workerPool.awaitTermination(10, TimeUnit.MINUTES)) {
+                    workerPool.shutdownNow();
+                }
+                System.out.println("\n--- Download Complete ---");
+                DirectoryManager.deleteUnIncludedFiles(saveDir, indexData);
+                System.out.println("\n--- Cleanup Complete ---");
             } else {
                 System.err.println("No index found!");
             }
@@ -66,11 +92,6 @@ public class Main {
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private static void processFile(URL baseURL, File saveDir, FileEntry entry, int index, int totalFiles) throws Exception {
-        System.out.println("File (" + index + " of " + totalFiles + "): " + entry.file());
-        IOUtils.downloadFile(baseURL, saveDir, entry);
     }
 
 
