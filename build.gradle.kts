@@ -15,7 +15,6 @@ dependencies {
     testImplementation(kotlin("test"))
 // Jackson Core + TOML Support
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.17.0")
-
     // Allows Jackson to work with Kotlin Data Classes
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 // Source: https://mvnrepository.com/artifact/info.picocli/picocli
@@ -29,7 +28,16 @@ kotlin {
 tasks.test {
     useJUnitPlatform()
 }
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
+    manifest {
+        attributes["Main-Class"] = "com.lightning323.packInstaller.PackInstaller"
+    }
+
+    // Manually grab every dependency and shove it into the JAR
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+}
 application {
     mainClass.set("com.lightning323.packInstaller.PackInstaller")
 }

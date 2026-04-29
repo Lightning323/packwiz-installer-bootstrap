@@ -25,27 +25,27 @@ import static com.lightning323.packInstaller.utils.IOUtils.fetchString;
 import static com.lightning323.packInstaller.utils.IOUtils.getRelativeUrl;
 
 @Command(
-        name = "pack",
+        name = "packwiz pack installer",
         mixinStandardHelpOptions = true,
-        version = "1.0",
+        version = "1.0.0",
         headerHeading = "%n", // Adds a newline before the header
         header = {
                 "@|fg(cyan)  _       _       ___       __ ___            _  _  |@",
                 "@|fg(cyan) |_) /\\  /  |/     |  |\\ | (_   |  /\\  |  |  |_ |_) |@",
                 "@|fg(cyan) |  /--\\ \\_ |\\    _|_ | \\| __)  | /--\\ |_ |_ |_ | \\ |@",
                 "",
-                "@|bold,white PACK-INSTALLER CLI Tool|@",
+                "@|bold,white PACKWIZ PACK-INSTALLER CLI TOOL|@",
                 "@|faint,black ---------------------------------------------------|@" // Changed gray to faint black
         },
-        description = "A custom package management utility."
+        description = "A package downloading utility."
 )
 public class PackInstaller implements Runnable {
 
 
-    @Option(names = {"-u", "--url"}, description = "Pack TOML URL")
+    @Option(names = {"-u", "--url"}, description = "packwiz pack.toml URL")
     URL PACK_TOML_URL;
 
-    @Option(names = {"-s", "--save"}, description = "The Save Directory", defaultValue = "./")
+    @Option(names = {"-s", "--save"}, description = "The output save directory (default: ./)", defaultValue = "./")
     File SAVE_DIR;
 
     @Option(names = {"-c", "--cleanup"}, description = "Do a full cleanup (delete all files)")

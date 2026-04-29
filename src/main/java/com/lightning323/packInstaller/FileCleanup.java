@@ -5,7 +5,9 @@ import com.lightning323.packInstaller.fileTypes.IndexFile;
 import com.lightning323.packInstaller.fileTypes.ModFile;
 import com.lightning323.packInstaller.utils.ModDownloader;
 
+import javax.print.attribute.URISyntax;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.io.File;
 import java.util.HashSet;
@@ -36,9 +38,7 @@ public class FileCleanup {
                 File pwTomlFile = new File(saveDir, fe.file());
                 ModFile modFile = ModDownloader.getFileEntry(pwTomlFile);
 
-                File jarFile = Path.of(fe.file())
-                        .resolveSibling(modFile.filename)
-                        .toFile();
+                File jarFile = Path.of(fe.file()).resolveSibling(modFile.filename).toFile();
                 filesThatShouldExist.add(jarFile.toPath());
             }
             filesThatShouldExist.add(Path.of(fe.file()));
@@ -58,12 +58,18 @@ public class FileCleanup {
             }
         }
 
+        Path base = saveDir.toPath().toAbsolutePath().normalize();
+        try {
+            Path jarFull = Path.of(PackInstaller.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                    .toAbsolutePath().normalize();
+            //Get the path to ourselves so we can skip deleting ourselves
+            Path ownJarfilePath = base.relativize(jarFull);
 
-        //Now delete files within downloaded directories that arent on the list
-        FileCleanup.getDownloadedDirectories().forEach(path -> {
-            //IMPORTANT SAFETY CHECK, make sure the path is inside the save directory
-            if (!FileCleanup.isInsideOrEqual(path, saveDir.toPath()))
-                throw new RuntimeException("Path " + path + " is not inside the save directory");
+            //Now delete files within downloaded directories that arent on the list
+            FileCleanup.getDownloadedDirectories().forEach(path -> {
+                //IMPORTANT SAFETY CHECK, make sure the path is inside the save directory
+                if (!FileCleanup.isInsideOrEqual(path, saveDir.toPath()))
+                    throw new RuntimeException("Path " + path + " is not inside the save directory");
 //            if (!fullCleanup) {
 //                for (Path spareDir : directoriesToSpare) {
 //                    if (FileCleanup.isInsideOrEqual(path, spareDir)) {
@@ -72,28 +78,35 @@ public class FileCleanup {
 //                    }
 //                }
 //            }
-            fileLoop:
-            for (File file : path.toFile().listFiles()) {
-                if (file.exists() && !file.isDirectory()) {
-                    Path base = saveDir.toPath().toAbsolutePath().normalize();
-                    Path full = file.toPath().toAbsolutePath().normalize();
-                    Path fileRelativePath = base.relativize(full);
-                    //Check if the file is in the index
-                    if (!filesThatShouldExist.contains(fileRelativePath)) {
+                fileLoop:
+                for (File file : path.toFile().listFiles()) {
+                    if (file.exists() && !file.isDirectory()) {
+                        Path full = file.toPath().toAbsolutePath().normalize();
+                        Path fileRelativePath = base.relativize(full);
 
-                        //Spare jarfiles that dont have a toml file, because they were likely added manually
-                        if (fileRelativePath.getFileName().toString().endsWith(".jar")
-                                && !jarsWithTomlFiles.contains(fileRelativePath)
-                                && !fullCleanup) {
-                            System.out.println("Sparing jarfile " + fileRelativePath);
+                        if (fileRelativePath.equals(ownJarfilePath)) { //Dont delete ourselves!
+                            System.out.println("Skipping own jarfile " + ownJarfilePath);
                             continue;
                         }
-                        System.out.println("Deleting file: " + fileRelativePath);
-                        file.delete();
+
+                        //Check if the file is in the index
+                        if (!filesThatShouldExist.contains(fileRelativePath)) {
+                            //Spare jarfiles that dont have a toml file, because they were likely added manually
+                            if (fileRelativePath.getFileName().toString().endsWith(".jar") && !jarsWithTomlFiles.contains(fileRelativePath) && !fullCleanup) {
+                                System.out.println(file.toPath());
+                                //We can spare files that don't have a toml file because they were likely added manually
+                                System.out.println("Sparing jarfile " + fileRelativePath);
+                                continue;
+                            }
+                            System.out.println("Deleting file: " + fileRelativePath);
+                            file.delete();
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (URISyntaxException e) {
+            System.out.println("Failed to safely delete unincluded files " + e.getMessage());
+        }
     }
 
     public static boolean isInsideOrEqual(Path child, Path parent) {
