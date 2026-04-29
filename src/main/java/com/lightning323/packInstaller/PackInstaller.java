@@ -94,6 +94,13 @@ public class PackInstaller implements Runnable {
                 String indexContent = fetchString(indexURL);
                 IndexFile indexData = mapper.readValue(indexContent, IndexFile.class);
                 SAVE_DIR.mkdirs();
+                if (!SAVE_DIR.exists()) {
+                    System.err.println("Failed to create save directory in " + SAVE_DIR.getAbsolutePath());
+                    System.exit(1);
+                }
+                System.out.println("\n\n" +
+                        "--- Downloading to " + SAVE_DIR.getAbsolutePath() + " ---" +
+                        "\n\n");
                 AtomicBoolean stop = new AtomicBoolean(false);
 
                 for (FileEntry entry : indexData.files) {
@@ -106,11 +113,10 @@ public class PackInstaller implements Runnable {
                                 popup.set(false);
                                 UIUtils.detachedAlert("Beginning download", "Starting download for " + config.name);
                             }
-
                         } catch (Exception e) {
                             System.err.println("Failed to download " + entry.file());
-                            stop.set(true);
                             e.printStackTrace();
+                            System.exit(1);
                         }
                     });
                 }
