@@ -88,7 +88,7 @@ public class Main {
                     workerPool.shutdownNow();
                 }
                 System.out.println("\n--- Download Complete ---");
-                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData);
+                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData,false);
                 System.out.println("\n--- Cleanup Complete ---");
 
                 if (System.currentTimeMillis() - startTime > 3000) {
