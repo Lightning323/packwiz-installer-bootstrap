@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.HashSet;
 
 import static com.lightning323.packInstaller.PackInstaller.*;
+import static com.lightning323.packInstaller.utils.IOUtils.isInsideOrEqual;
 import static com.lightning323.packInstaller.utils.ModDownloader.MOD_TOML_FILE_EXT;
 
 public class FileCleanup {
@@ -69,11 +70,11 @@ public class FileCleanup {
             //Now delete files within downloaded directories that arent on the list
             FileCleanup.getDownloadedDirectories().forEach(path -> {
                 //IMPORTANT SAFETY CHECK, make sure the path is inside the save directory
-                if (!FileCleanup.isInsideOrEqual(path, saveDir.toPath()))
+                if (!isInsideOrEqual(path, saveDir.toPath()))
                     throw new RuntimeException("Path " + path + " is not inside the save directory");
                 if (!FULL_RESET) {
                     for (Path spareDir : PATHS_TO_SPARE) {
-                        if (FileCleanup.isInsideOrEqual(path, spareDir)) {
+                        if (isInsideOrEqual(path, spareDir)) {
                             System.out.println("Skipping directory: " + path);
                             return;
                         }
@@ -86,7 +87,7 @@ public class FileCleanup {
                         Path fileRelativePath = base.relativize(full);
 
                         if (fileRelativePath.equals(ownJarfilePath)) { //Dont delete ourselves!
-                            System.out.println("Skipping own jarfile " + ownJarfilePath);
+                            System.out.println("Skipping own jarfile: " + ownJarfilePath);
                             continue;
                         }
 
@@ -115,14 +116,7 @@ public class FileCleanup {
         }
     }
 
-    public static boolean isInsideOrEqual(Path child, Path parent) {
-        // 1. Normalize and get absolute paths to handle "." or ".." or relative vs absolute
-        Path absChild = child.toAbsolutePath().normalize();
-        Path absParent = parent.toAbsolutePath().normalize();
 
-        // 2. startsWith handles both "inside" and "equal to"
-        return absChild.startsWith(absParent);
-    }
 
     public static HashSet<Path> getDownloadedDirectories() {
         return downloadedDirectories;

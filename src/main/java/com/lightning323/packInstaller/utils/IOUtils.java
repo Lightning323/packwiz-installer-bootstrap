@@ -36,10 +36,18 @@ public class IOUtils {
                 return; //The files are the same
             }
 
-            //Check if the file is in the DONT_OVERWRITE list
-            if (!PackInstaller.FULL_RESET && PATHS_TO_SPARE.contains(Paths.get(entry.file()))) {
-                System.out.println("Skipping: " + entry.file());
-                return;
+            if (!PackInstaller.FULL_RESET) {
+                Path filePath = Paths.get(entry.file());
+                if (PATHS_TO_SPARE.contains(filePath)) {  //Check if the file is in the DONT_OVERWRITE list
+                    System.out.println("Skipping: " + entry.file());
+                    return;
+                }
+                for (Path path : PackInstaller.PATHS_TO_SPARE) { //Check if the file is in a directory in the DONT_OVERWRITE list
+                    if (isInsideOrEqual(filePath, path)) {
+                        System.out.println("Skipping directory: " + path);
+                        return;
+                    }
+                }
             }
         }
 
@@ -50,6 +58,15 @@ public class IOUtils {
             writer.write(inputStream.readAllBytes());
         }
         writeFile(hashFormat, writer.toByteArray(), outFile, entry.hash());
+    }
+
+    public static boolean isInsideOrEqual(Path child, Path parent) {
+        // 1. Normalize and get absolute paths to handle "." or ".." or relative vs absolute
+        Path absChild = child.toAbsolutePath().normalize();
+        Path absParent = parent.toAbsolutePath().normalize();
+
+        // 2. startsWith handles both "inside" and "equal to"
+        return absChild.startsWith(absParent);
     }
 
     public static void writeFile(String hashFormat, byte[] bytes, File outFile, String hash) throws IOException {
