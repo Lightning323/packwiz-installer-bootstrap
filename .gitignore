@@ -1,5 +1,6 @@
 /test_save/
 /save_pack
+/test-pack
 # Gradle local cache and wrapper distribution
 .gradle/
 build/

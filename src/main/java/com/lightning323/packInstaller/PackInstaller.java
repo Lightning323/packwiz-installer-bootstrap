@@ -30,7 +30,7 @@ import static com.lightning323.packInstaller.utils.IOUtils.getRelativeUrl;
 @Command(
         name = "packwiz pack installer",
         mixinStandardHelpOptions = true,
-        version = "1.0.0",
+        version = "1.0.1",
         headerHeading = "%n", // Adds a newline before the header
         header = {
                 "@|fg(cyan)  _       _       ___       __ ___            _  _  |@",
