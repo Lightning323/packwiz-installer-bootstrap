@@ -27,7 +27,7 @@ public class IOUtils {
         File dir = outFile.getParentFile();
         dir.mkdirs();
         //Add the directory to the list of downloaded directories
-        FileCleanup.add(dir.toPath());
+        FileCleanup.add(baseSaveDir, dir.toPath());
         if (outFile.exists()) {
             //If a file already exist, check if they are the same
             byte[] existingFile = Files.readAllBytes(outFile.toPath());

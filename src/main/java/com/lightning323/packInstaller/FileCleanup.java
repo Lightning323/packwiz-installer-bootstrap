@@ -21,7 +21,7 @@ public class FileCleanup {
      * Each jar that is supposed to be here has a .pw.toml file
      * If a jar was added that does NOT have a .pw.toml file, it will be skipped
      */
-    static HashSet<Path> downloadedDirectories = new HashSet<>();
+    static HashSet<Path> cleanDirectories = new HashSet<>();
 
     public static void deleteUnIncludedFiles(File saveDir, IndexFile indexData) throws IOException {
         System.out.println("\n--- Deleting Unincluded Files ---");
@@ -68,7 +68,7 @@ public class FileCleanup {
             Path ownJarfilePath = base.relativize(jarFull);
 
             //Now delete files within downloaded directories that arent on the list
-            FileCleanup.getDownloadedDirectories().forEach(path -> {
+            FileCleanup.getCleanDirectories().forEach(path -> {
                 //IMPORTANT SAFETY CHECK, make sure the path is inside the save directory
                 if (!isInsideOrEqual(path, saveDir.toPath()))
                     throw new RuntimeException("Path " + path + " is not inside the save directory");
@@ -118,11 +118,16 @@ public class FileCleanup {
 
 
 
-    public static HashSet<Path> getDownloadedDirectories() {
-        return downloadedDirectories;
+    public static HashSet<Path> getCleanDirectories() {
+        return cleanDirectories;
     }
 
-    public static synchronized void add(Path newPath) {
-        downloadedDirectories.add(newPath);
+    public static synchronized void add(File saveDir, Path newPath) {
+        Path savePath = saveDir.toPath().toAbsolutePath().normalize();
+        Path normalizedNew = newPath.toAbsolutePath().normalize();
+        //Dont add base directory as a cleanup directory
+        if (!savePath.startsWith(normalizedNew)) {
+            cleanDirectories.add(newPath);
+        }
     }
 }
