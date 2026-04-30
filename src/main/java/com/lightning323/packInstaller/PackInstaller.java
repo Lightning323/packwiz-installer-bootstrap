@@ -16,6 +16,9 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -43,13 +46,27 @@ public class PackInstaller implements Runnable {
 
 
     @Option(names = {"-u", "--url"}, description = "packwiz pack.toml URL")
-    URL PACK_TOML_URL;
+    public static URL PACK_TOML_URL;
 
     @Option(names = {"-s", "--save"}, description = "The output save directory (default: ./)", defaultValue = "./")
-    File SAVE_DIR;
+    public static File SAVE_DIR;
 
-    @Option(names = {"-c", "--cleanup"}, description = "Do a full cleanup (delete all files)")
-    boolean fullCleanup = false;
+    @Option(names = {"-r", "--reset"}, description = "Do a full cleanup (reset all files)")
+    public static boolean FULL_RESET = false;
+
+    @Option(names = {"-sm", "--spare-added-mods"}, description = "If we should spare mods added by the user")
+    public static boolean SPARE_ADDED_MODS = false;
+
+    @Option(
+            names = {"--spare"},
+            description = "Files/directories to prevent overwriting or deletion",
+            split = ","
+    )
+    public static HashSet<Path> PATHS_TO_SPARE = new HashSet<>();
+    static {
+        PATHS_TO_SPARE.add(Paths.get("options.txt"));
+        PATHS_TO_SPARE.add(Paths.get("servers.dat"));
+    }
 
     private static void fail(String message) {
         System.err.println("\nFAIL:\n" + message.toUpperCase());
@@ -138,7 +155,7 @@ public class PackInstaller implements Runnable {
                     workerPool.shutdownNow();
                 }
                 System.out.println("\n--- Download Complete ---");
-                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData, fullCleanup);
+                FileCleanup.deleteUnIncludedFiles(SAVE_DIR, indexData);
                 System.out.println("\n--- Cleanup Complete ---");
 
                 if (System.currentTimeMillis() - startTime > 2000) {
