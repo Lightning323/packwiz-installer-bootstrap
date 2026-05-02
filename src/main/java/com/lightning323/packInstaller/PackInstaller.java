@@ -57,6 +57,9 @@ public class PackInstaller implements Runnable {
     @Option(names = {"-sm", "--spare-added-mods"}, description = "If we should spare mods added by the user")
     public static boolean SPARE_ADDED_MODS = false;
 
+    @Option(names = {"-kpt", "--keep-pw-toml"}, description = "If we should keep .pw.toml files")
+    public static boolean KEEP_PW_TOML_FILES = false;
+
     @Option(
             names = {"--spare"},
             description = "Files/directories to prevent overwriting or deletion",

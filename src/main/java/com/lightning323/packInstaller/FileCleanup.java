@@ -31,7 +31,7 @@ public class FileCleanup {
             //For .pw.toml files
             if (fe.file().endsWith(MOD_TOML_FILE_EXT)) {
                 //Only add the .pw.toml files if we need it to determine which mods have been added manually
-                if (SPARE_ADDED_MODS) filesThatShouldExist.add(Path.of(fe.file()));
+                if (SPARE_ADDED_MODS || KEEP_PW_TOML_FILES) filesThatShouldExist.add(Path.of(fe.file()));
                 //Add the jar file to the entry
                 File pwTomlFile = new File(saveDir, fe.file());
                 ModFile modFile = ModDownloader.getFileEntry(pwTomlFile);
