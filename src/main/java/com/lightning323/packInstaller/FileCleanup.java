@@ -30,7 +30,8 @@ public class FileCleanup {
         for (FileEntry fe : indexData.files) {
             //For .pw.toml files
             if (fe.file().endsWith(MOD_TOML_FILE_EXT)) {
-                filesThatShouldExist.add(Path.of(fe.file()));
+                //Only add the .pw.toml files if we need it to determine which mods have been added manually
+                if (SPARE_ADDED_MODS) filesThatShouldExist.add(Path.of(fe.file()));
                 //Add the jar file to the entry
                 File pwTomlFile = new File(saveDir, fe.file());
                 ModFile modFile = ModDownloader.getFileEntry(pwTomlFile);
@@ -115,7 +116,6 @@ public class FileCleanup {
             System.out.println("Failed to safely delete unincluded files " + e.getMessage());
         }
     }
-
 
 
     public static HashSet<Path> getCleanDirectories() {
